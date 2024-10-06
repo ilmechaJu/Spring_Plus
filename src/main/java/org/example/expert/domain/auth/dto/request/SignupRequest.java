@@ -1,5 +1,6 @@
 package org.example.expert.domain.auth.dto.request;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -17,4 +18,6 @@ public class SignupRequest {
     private String password;
     @NotBlank
     private String userRole;
+    @NotBlank
+    private String nickname;
 }
