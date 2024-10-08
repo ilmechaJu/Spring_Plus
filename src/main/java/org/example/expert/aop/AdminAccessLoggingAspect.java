@@ -21,7 +21,8 @@ public class AdminAccessLoggingAspect {
     // 포인트컷
     @Before("execution(* org.example.expert.domain.user.controller.UserAdminController.changeUserRole(..))")
     public void logAfterChangeUserRole(JoinPoint joinPoint) {
-        String userId = String.valueOf(request.getAttribute("userId"));
+        Object[] args = joinPoint.getArgs();
+        String userId = String.valueOf(args[0]);
         String requestUrl = request.getRequestURI();
         LocalDateTime requestTime = LocalDateTime.now();
 
