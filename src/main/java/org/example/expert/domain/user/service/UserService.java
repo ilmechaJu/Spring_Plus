@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -40,10 +42,9 @@ public class UserService {
     }
 
     @Cacheable(cacheNames="userCache", key="#nickname")
-    public Page<UserResponse> getUserList(int page, int size, String nickname) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        Page<User> userList = userRepository.findAllByNickname(pageable, nickname);
-        return userList.map(user -> new UserResponse(user.getId(), user.getEmail(), user.getNickname()));
+    public UserListResponse getUserList(int page, int size, String nickname) {
+        List<User> userList = userRepository.findByNickname(nickname);
+        return UserListResponse.from(userList);
     }
 
     @Transactional
