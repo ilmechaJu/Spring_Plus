@@ -1,11 +1,17 @@
 package org.example.expert.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
+import org.example.expert.domain.user.dto.response.UserListResponse;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,14 +20,30 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+
+//    @Cacheable(cacheNames="userCache", key="#nickname")
+//    public UserListResponse searchUserNickname(String nickname) {
+//        if (Strings.isBlank(nickname)) throw new InvalidRequestException("User nickname cannot be empty");
+//        return UserListResponse.from(userRepository.findByNickname(nickname));
+//    }
+    @Cacheable(cacheNames="userCache", key="#nickname")
     public UserResponse getUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidRequestException("User not found"));
-        return new UserResponse(user.getId(), user.getEmail());
+        return new UserResponse(user.getId(), user.getEmail(), user.getNickname());
+
+    }
+
+    @Cacheable(cacheNames="userCache", key="#nickname")
+    public Page<UserResponse> getUserList(int page, int size, String nickname) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<User> userList = userRepository.findAllByNickname(pageable, nickname);
+        return userList.map(user -> new UserResponse(user.getId(), user.getEmail(), user.getNickname()));
     }
 
     @Transactional
